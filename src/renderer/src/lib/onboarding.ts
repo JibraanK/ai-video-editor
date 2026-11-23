@@ -139,7 +139,6 @@ export const TUTORIAL: GuideStep[] = [
 export async function startTutorial(): Promise<void> {
   const s = getState()
   if (s.remote) return s.toast('Leave the live session before starting the tutorial', 'error')
-  if (s.dirty && !confirm('The tutorial opens a fresh project. Discard unsaved changes?')) return
   useGuide.getState().stop()
   useOnboarding.setState({ welcome: false, welcomed: true })
   s.set({ busy: 'Preparing sample clip…' })
@@ -151,6 +150,7 @@ export async function startTutorial(): Promise<void> {
   } finally {
     useStore.setState({ busy: null })
   }
+  if (getState().dirty && !confirm('The tutorial opens a fresh project. Discard unsaved changes?')) return
   const project = createProject('Tutorial')
   tutorialProjectId = project.id
   s.setProject(project, 'New', { resetHistory: true })

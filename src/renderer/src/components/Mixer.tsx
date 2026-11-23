@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { getState, useStore } from '../store'
 
 const db = (g: number) => (g > 0 ? `${(20 * Math.log10(g)).toFixed(1)}` : '-∞')
@@ -27,7 +28,8 @@ function Strip({ name, gain, muted, solo, onGain, onMute, onSolo, master }: { na
 }
 
 export function Mixer() {
-  const tracks = useStore((s) => s.project.tracks.filter((t) => t.kind === 'audio' || t.kind === 'video'))
+  const allTracks = useStore((s) => s.project.tracks)
+  const tracks = useMemo(() => allTracks.filter((t) => t.kind === 'audio' || t.kind === 'video'), [allTracks])
   const master = useStore((s) => s.project.masterGain)
   const upd = (trackId: string, patch: object) => void getState().dispatch('update_track', { trackId, ...patch })
   return (

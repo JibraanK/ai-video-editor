@@ -16,7 +16,7 @@ import { deleteTemplate, listTemplates, saveTemplate } from './templatesStore'
 import { executeTool } from './tools'
 import { transcriptionBackends } from './transcribe'
 
-protocol.registerSchemesAsPrivileged([{ scheme: 'media', privileges: { standard: true, secure: true, supportFetchAPI: true, stream: true, bypassCSP: true } }])
+protocol.registerSchemesAsPrivileged([{ scheme: 'media', privileges: { standard: true, secure: true, supportFetchAPI: true, stream: true, bypassCSP: true, corsEnabled: true } }])
 
 const MIME: Record<string, string> = { '.mp4': 'video/mp4', '.m4v': 'video/mp4', '.mov': 'video/quicktime', '.webm': 'video/webm', '.mkv': 'video/x-matroska', '.mp3': 'audio/mpeg', '.wav': 'audio/wav', '.m4a': 'audio/mp4', '.aac': 'audio/aac', '.ogg': 'audio/ogg', '.flac': 'audio/flac', '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.webp': 'image/webp', '.gif': 'image/gif' }
 
@@ -28,11 +28,12 @@ function registerMediaProtocol(): void {
     const size = statSync(path).size
     const type = MIME[extname(path).toLowerCase()] ?? 'application/octet-stream'
     const m = req.headers.get('range')?.match(/bytes=(\d*)-(\d*)/)
-    if (!m) return net.fetch(pathToFileURL(path).toString())
+    const cors = { 'access-control-allow-origin': '*', 'accept-ranges': 'bytes', 'content-type': type }
+    if (!m) return new Response(Readable.toWeb(createReadStream(path)) as unknown as ReadableStream, { status: 200, headers: { ...cors, 'content-length': String(size) } })
     const start = m[1] ? Number(m[1]) : Math.max(0, size - Number(m[2]))
     const end = m[1] && m[2] ? Math.min(Number(m[2]), size - 1) : size - 1
     const body = Readable.toWeb(createReadStream(path, { start, end })) as unknown as ReadableStream
-    return new Response(body, { status: 206, headers: { 'content-type': type, 'content-length': String(end - start + 1), 'content-range': `bytes ${start}-${end}/${size}`, 'accept-ranges': 'bytes' } })
+    return new Response(body, { status: 206, headers: { ...cors, 'content-length': String(end - start + 1), 'content-range': `bytes ${start}-${end}/${size}` } })
   })
 }
 

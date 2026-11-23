@@ -44,8 +44,10 @@ const api = {
   onRpc: (handler: (method: string, params: any) => Promise<unknown>) =>
     on('rpc:request', async ({ id, method, params }) => {
       try {
-        ipcRenderer.send('rpc:response', { id, result: await handler(method, params) })
+        const result = await handler(method, params)
+        ipcRenderer.send('rpc:response', { id, result: result === undefined ? null : JSON.parse(JSON.stringify(result)) })
       } catch (e) {
+        console.error('[rpc] failed', method, e)
         ipcRenderer.send('rpc:response', { id, error: (e as Error).message })
       }
     })

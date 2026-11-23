@@ -33,6 +33,7 @@ async function uiTool(name: string, a: any): Promise<unknown> {
 /** Main process (MCP / agents / service tools) talks to the live editor state through these. */
 export function registerRpc(): () => void {
   return window.api.onRpc(async (method, params) => {
+    console.debug('[rpc]', method)
     const s = getState()
     switch (method) {
       case 'getProject':

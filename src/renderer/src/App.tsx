@@ -21,10 +21,11 @@ function useShortcuts(toggleAsk: () => void, setDialog: (d: Dialog) => void) {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const t = e.target as HTMLElement
-      if (t.closest('input, textarea, select, [contenteditable]')) return
-      const s = getState()
       const mod = e.ctrlKey || e.metaKey
       const k = e.key.toLowerCase()
+      if (mod && k === 'k') return e.preventDefault(), toggleAsk()
+      if (t.closest('input, textarea, select, [contenteditable]')) return
+      const s = getState()
       const fps = s.project.settings.fps
       const handled = () => e.preventDefault()
       if (mod && k === 'z') return handled(), e.shiftKey ? s.redo() : s.undo()

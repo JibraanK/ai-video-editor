@@ -6,7 +6,7 @@ export const BUILTIN_GUIDES: { keywords: RegExp; title: string; steps: GuideStep
     keywords: /import|add (media|video|footage|file)|upload/,
     title: 'Import media',
     steps: [
-      { target: 'topbar.import', text: 'Click Import (or press Ctrl+I) and pick your video, audio or image files.', shortcut: 'Ctrl+I' },
+      { target: 'topbar.import', text: 'Click Footage (or press Ctrl+I) and pick your video, audio or image files.', shortcut: 'Ctrl+I' },
       { target: 'pool.media', text: 'Your files appear in the Media Pool. You can also drag files straight from your desktop here.' },
       { target: 'timeline', text: 'Drag a file onto a track, or double-click it to append it to the end of the timeline.' }
     ]
@@ -15,7 +15,7 @@ export const BUILTIN_GUIDES: { keywords: RegExp; title: string; steps: GuideStep
     keywords: /caption|subtitle|transcri/,
     title: 'Add auto captions',
     steps: [
-      { target: 'topbar.captions', text: 'Click Captions. Cutline transcribes the timeline audio and creates a caption track.' },
+      { target: 'topbar.captions', text: 'Click Subtitles. Cutline transcribes the timeline audio and creates a caption track.' },
       { target: 'timeline', text: 'Captions land on the Captions track. Click one to edit its text.' },
       { target: 'inspector.text', text: 'Style all captions at once here: font, size, colour, box and animation.' },
       { target: 'export.captions', text: 'On the Export page you can burn them in or save SRT/VTT files.' }

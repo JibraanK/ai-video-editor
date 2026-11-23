@@ -169,7 +169,7 @@ export function Timeline() {
 
   const splitAtPlayhead = () => {
     const s = getState()
-    const ids = s.selection.length ? s.selection : clipsAt(s.project, s.playhead).map((c) => c.id)
+    const ids = s.selection.length ? s.selection : clipsAt(s.project, s.playhead).filter((c) => !s.project.tracks.find((t) => t.id === c.trackId)?.locked).map((c) => c.id)
     if (ids.length) void s.dispatch('split', { time: s.playhead, clipIds: ids }).catch((err) => s.toast(err.message, 'error'))
   }
   const nudgeGain = (db: number) => {

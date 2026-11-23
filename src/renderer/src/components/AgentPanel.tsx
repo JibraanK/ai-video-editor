@@ -39,7 +39,7 @@ function McpCard() {
   )
 }
 
-export function AgentPanel({ onClose }: { onClose: () => void }) {
+export function AgentPanel({ onClose, hidden }: { onClose: () => void; hidden?: boolean }) {
   const [msgs, setMsgs] = useState<Msg[]>([{ role: 'assistant', text: 'Hi! Ask me to edit (“remove the silences”), to show you how to do something (“how do I add a title?”), or to build a feature the editor doesn’t have yet.' }])
   const [input, setInput] = useState('')
   const [mode, setMode] = useState<Mode>(() => (localStorage.getItem('cutline.agentMode') as Mode) || 'cloud')
@@ -88,7 +88,7 @@ export function AgentPanel({ onClose }: { onClose: () => void }) {
   }
 
   return (
-    <div className="panel agent">
+    <div className="panel agent" hidden={hidden}>
       <div className="panel-title row between">
         <span>Ask Cutline</span>
         <div className="row">

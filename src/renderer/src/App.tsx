@@ -125,7 +125,7 @@ export function App() {
           </div>
           {side === 'inspector' && <Inspector />}
           {side === 'mixer' && <Mixer />}
-          {side === 'ask' && <AgentPanel onClose={() => getState().set({ side: null })} />}
+          <AgentPanel hidden={side !== 'ask'} onClose={() => getState().set({ side: null })} />
           <div className="bottom">
             <Timeline />
           </div>

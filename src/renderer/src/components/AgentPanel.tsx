@@ -56,7 +56,7 @@ export function AgentPanel({ onClose, hidden }: { onClose: () => void; hidden?: 
         else if (e.type === 'log') add({ role: 'log', text: e.text })
         else if (e.type === 'status') add({ role: 'status', text: e.text })
         else if (e.type === 'error') add({ role: 'error', text: e.text })
-        if (e.type === 'done' || e.type === 'error') setRunning(false)
+        if (e.type === 'done' || (e.type === 'error' && e.source === 'cloud')) setRunning(false)
       }),
     []
   )
@@ -80,7 +80,11 @@ export function AgentPanel({ onClose, hidden }: { onClose: () => void; hidden?: 
     }
     setRunning(true)
     try {
-      await (mode === 'cloud' ? window.api.agentCloud(prompt) : window.api.agentCli(prompt))
+      if (mode === 'cloud') await window.api.agentCloud(prompt)
+      else {
+        await window.api.agentCli(prompt)
+        setRunning(false)
+      }
     } catch (e) {
       setMsgs((m) => [...m, { role: 'error', text: (e as Error).message }])
       setRunning(false)

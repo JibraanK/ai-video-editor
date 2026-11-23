@@ -56,7 +56,7 @@ export function AgentPanel({ onClose, hidden }: { onClose: () => void; hidden?: 
         else if (e.type === 'log') add({ role: 'log', text: e.text })
         else if (e.type === 'status') add({ role: 'status', text: e.text })
         else if (e.type === 'error') add({ role: 'error', text: e.text })
-        if (e.type === 'done' || (e.type === 'error' && e.source === 'cloud')) setRunning(false)
+        if (e.type === 'done' || e.type === 'error') setRunning(false)
       }),
     []
   )

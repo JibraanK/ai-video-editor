@@ -74,7 +74,7 @@ let toastId = 0
 
 type CommandListener = (name: string, args: unknown) => void
 const commandListeners = new Set<CommandListener>()
-/** Observe successful edits (dispatched commands plus 'undo' / 'redo'). */
+/** Observe edits that changed the project (dispatched commands plus 'undo' / 'redo'). */
 export function onCommand(cb: CommandListener): () => void {
   commandListeners.add(cb)
   return () => {
@@ -116,8 +116,8 @@ export const useStore = create<State>((set, get) => ({
       set((s) => ({ project, past: [...s.past, before].slice(-HISTORY), future: [], dirty: true }))
       const ids = new Set(project.clips.map((c) => c.id))
       if (get().selection.some((id) => !ids.has(id))) set({ selection: get().selection.filter((id) => ids.has(id)) })
+      emitCommand(name, args)
     }
-    emitCommand(name, args)
     return result
   },
   setProject(p, label = 'Edit', opts) {

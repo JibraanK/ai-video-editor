@@ -63,8 +63,8 @@ export function trackOnboarding(): () => void {
   const fromProject = () => milestonesFromProject(getState().project).forEach(markQuickstart)
   fromProject()
   const offStore = useStore.subscribe((s, prev) => s.project !== prev.project && fromProject())
-  const offCmd = onCommand((name) => {
-    const id = milestoneFromCommand(name)
+  const offCmd = onCommand((name, args) => {
+    const id = milestoneFromCommand(name, args)
     if (id) markQuickstart(id)
   })
   return () => {

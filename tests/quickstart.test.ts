@@ -27,7 +27,8 @@ describe('quickstart milestones', () => {
   it('maps edit commands to milestones', () => {
     expect(milestoneFromCommand('split')).toBe('cut')
     expect(milestoneFromCommand('apply_suggestions')).toBe('cut')
-    expect(milestoneFromCommand('suggest_cuts')).toBe('ai')
+    expect(milestoneFromCommand('suggest_cuts', { suggestions: [{ kind: 'remove', start: 1, end: 2 }] })).toBe('ai')
+    expect(milestoneFromCommand('suggest_cuts', { suggestions: [] })).toBeNull()
     expect(milestoneFromCommand('move_clip')).toBeNull()
   })
 

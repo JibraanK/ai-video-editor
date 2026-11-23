@@ -21,8 +21,9 @@ export function milestonesFromProject(p: Project): QuickstartId[] {
 }
 
 /** Milestone reached by a successful edit command, if any. */
-export function milestoneFromCommand(name: string): QuickstartId | null {
+export function milestoneFromCommand(name: string, args?: unknown): QuickstartId | null {
   if (CUT_COMMANDS.has(name)) return 'cut'
+  if (name === 'suggest_cuts' && !(args as { suggestions?: unknown[] } | undefined)?.suggestions?.length) return null
   if (AI_COMMANDS.has(name)) return 'ai'
   return null
 }

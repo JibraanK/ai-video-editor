@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import type { getState } from '../store'
 
 /** Every element tagged with data-guide="<id>" can be pointed at by the assistant. */
 export const GUIDE_TARGETS: Record<string, string> = {
@@ -19,9 +20,11 @@ export const GUIDE_TARGETS: Record<string, string> = {
   'topbar.share': 'Share / collaborate: host or join a live multiplayer room',
   'topbar.ask': 'Ask Cutline: the AI assistant panel',
   'topbar.settings': 'Settings: AI providers, API keys, CLI agent, MCP, transcription',
+  'topbar.help': 'Help: interactive tutorial, quickstart checklist, keyboard shortcuts',
   'page.edit': 'Edit page',
   'page.export': 'Export page',
   'pool.media': 'Media Pool tab: imported files; drag onto the timeline or double-click to append',
+  'pool.items': 'Imported media files in the Media Pool',
   'pool.text': 'Text tab: text effect presets; click to add at the playhead',
   'pool.templates': 'Templates tab: apply or save video/timeline templates and analyse a reference video',
   'pool.plugins': 'Plugins tab: custom script features created by the assistant',
@@ -49,10 +52,18 @@ export const GUIDE_TARGETS: Record<string, string> = {
   'export.captions': 'Export captions as SRT/VTT files'
 }
 
+export interface GuideContext {
+  s: ReturnType<typeof getState>
+  /** Commands (plus 'undo' / 'redo') performed since this step appeared. */
+  seen: Set<string>
+}
+
 export interface GuideStep {
   target: string
   text: string
   shortcut?: string
+  /** Interactive step: waits for the user to do it and advances when this returns true. */
+  until?: (ctx: GuideContext) => boolean
 }
 
 interface GuideState {
@@ -60,7 +71,8 @@ interface GuideState {
   steps: GuideStep[]
   index: number
   active: boolean
-  start: (title: string, steps: GuideStep[]) => void
+  onDone?: () => void
+  start: (title: string, steps: GuideStep[], opts?: { onDone?: () => void }) => void
   next: () => void
   back: () => void
   stop: () => void
@@ -71,8 +83,13 @@ export const useGuide = create<GuideState>((set, get) => ({
   steps: [],
   index: 0,
   active: false,
-  start: (title, steps) => set({ title, steps, index: 0, active: steps.length > 0 }),
-  next: () => (get().index + 1 >= get().steps.length ? set({ active: false }) : set({ index: get().index + 1 })),
+  start: (title, steps, opts) => set({ title, steps, index: 0, active: steps.length > 0, onDone: opts?.onDone }),
+  next: () => {
+    const { index, steps, onDone } = get()
+    if (index + 1 < steps.length) return set({ index: index + 1 })
+    set({ active: false, onDone: undefined })
+    onDone?.()
+  },
   back: () => set({ index: Math.max(0, get().index - 1) }),
   stop: () => set({ active: false })
 }))

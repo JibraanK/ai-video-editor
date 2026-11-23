@@ -72,6 +72,17 @@ interface State {
 
 let toastId = 0
 
+type CommandListener = (name: string, args: unknown) => void
+const commandListeners = new Set<CommandListener>()
+/** Observe edits that changed the project (dispatched commands plus 'undo' / 'redo'). */
+export function onCommand(cb: CommandListener): () => void {
+  commandListeners.add(cb)
+  return () => {
+    commandListeners.delete(cb)
+  }
+}
+const emitCommand = (name: string, args: unknown = {}) => commandListeners.forEach((cb) => cb(name, args))
+
 export const useStore = create<State>((set, get) => ({
   project: createProject(),
   projectPath: null,
@@ -94,13 +105,18 @@ export const useStore = create<State>((set, get) => ({
 
   async dispatch(name, args = {}) {
     const { remote } = get()
-    if (remote) return remote.command(name, args)
+    if (remote) {
+      const r = await remote.command(name, args)
+      emitCommand(name, args)
+      return r
+    }
     const before = get().project
     const { project, result } = applyCommand(before, name, args)
     if (project !== before) {
       set((s) => ({ project, past: [...s.past, before].slice(-HISTORY), future: [], dirty: true }))
       const ids = new Set(project.clips.map((c) => c.id))
       if (get().selection.some((id) => !ids.has(id))) set({ selection: get().selection.filter((id) => ids.has(id)) })
+      emitCommand(name, args)
     }
     return result
   },
@@ -116,15 +132,17 @@ export const useStore = create<State>((set, get) => ({
   },
   undo() {
     const { remote, past, project } = get()
-    if (remote) return remote.undo()
+    if (remote) return remote.undo(), emitCommand('undo')
     if (!past.length) return
     set((s) => ({ project: past[past.length - 1], past: past.slice(0, -1), future: [project, ...s.future], dirty: true }))
+    emitCommand('undo')
   },
   redo() {
     const { remote, future, project } = get()
-    if (remote) return remote.redo()
+    if (remote) return remote.redo(), emitCommand('redo')
     if (!future.length) return
     set((s) => ({ project: future[0], future: future.slice(1), past: [...s.past, project], dirty: true }))
+    emitCommand('redo')
   },
   addMedia(items) {
     const p = structuredClone(get().project)

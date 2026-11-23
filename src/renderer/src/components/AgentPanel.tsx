@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react'
 import { getState } from '../store'
 import { useGuide } from '../lib/guide'
 import { findBuiltinGuide } from '../lib/builtinGuides'
+import { markQuickstart } from '../lib/onboarding'
 
 type Msg = { role: 'user' | 'assistant' | 'tool' | 'log' | 'error' | 'status'; text: string }
 type Mode = 'cloud' | 'cli'
@@ -78,6 +79,7 @@ export function AgentPanel({ onClose, hidden }: { onClose: () => void; hidden?: 
       setMsgs((m) => [...m, { role: 'assistant', text: `Showing you on screen: ${guide.title}. Want me to just do it instead? Say “do it”.` }])
       return
     }
+    markQuickstart('ai')
     setRunning(true)
     try {
       if (mode === 'cloud') await window.api.agentCloud(prompt)

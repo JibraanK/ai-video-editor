@@ -7,7 +7,7 @@ import { Readable } from 'node:stream'
 import { startCollabServer, type CollabServer } from '../collab/server'
 import type { ExportOptions, Project, Template } from '@shared/types'
 import { cancelAgent, mcpConfigSnippets, resetAgent, runCliAgent, runCloudAgent } from './agents'
-import { importMedia, PEAKS_PER_SECOND, waveform } from './ffmpeg'
+import { importMedia, PEAKS_PER_SECOND, sampleClip, waveform } from './ffmpeg'
 import { mcpStatus, startMcpServer, stopMcpServer } from './mcpServer'
 import { cancelExport, renderProject } from './render'
 import { getSettings, saveSecrets, saveSettings, secretStatus, type Secrets, type Settings } from './settings'
@@ -90,6 +90,7 @@ function registerIpc(): void {
     return out
   })
   h('media:waveform', async (_e, path: string) => ({ peaks: await waveform(path), peaksPerSecond: PEAKS_PER_SECOND }))
+  h('media:sample', () => sampleClip())
   h('project:save', async (_e, project: Project, path?: string) => {
     let target = path
     if (!target) {

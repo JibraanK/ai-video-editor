@@ -5,6 +5,7 @@ import { formatTimecode } from '@shared/timeline'
 import type { Template } from '@shared/types'
 import { getState, useStore } from '../store'
 import { appendToTimeline, importDialog, importPaths, runTool } from '../lib/actions'
+import { useGuide } from '../lib/guide'
 import { thumbUrl } from '../lib/media'
 import { runPlugin, usePlugins } from '../lib/plugins'
 import { AreaCursors, areaPointer } from './Cursors'
@@ -38,7 +39,7 @@ function MediaTab() {
           </button>
         </div>
       ) : (
-        <div className="media-grid">
+        <div className="media-grid" data-guide="pool.items">
           {media.map((m) => (
             <div
               key={m.id}
@@ -196,6 +197,10 @@ function PluginsTab() {
 
 export function MediaPool() {
   const [tab, setTab] = useState<Tab>('media')
+  const guideTarget = useGuide((g) => (g.active ? g.steps[g.index]?.target : null))
+  useEffect(() => {
+    if (guideTarget === 'pool.items') setTab('media')
+  }, [guideTarget])
   return (
     <div className="panel pool" {...areaPointer('pool')}>
       <div className="tabs">

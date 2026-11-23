@@ -13,6 +13,8 @@ import { Mixer } from './components/Mixer'
 import { AgentPanel } from './components/AgentPanel'
 import { ExportPage } from './components/ExportPage'
 import { GuideOverlay } from './components/GuideOverlay'
+import { QuickstartPanel, WelcomeDialog } from './components/Onboarding'
+import { trackOnboarding } from './lib/onboarding'
 import { SettingsDialog, ShareDialog, ShortcutsDialog } from './components/Dialogs'
 
 type Dialog = 'settings' | 'share' | 'shortcuts' | null
@@ -99,6 +101,7 @@ export function App() {
   const [dialog, setDialog] = useState<Dialog>(null)
 
   useEffect(() => registerRpc(), [])
+  useEffect(() => trackOnboarding(), [])
   // Share playhead/page/selection with collaborators.
   useEffect(
     () =>
@@ -139,7 +142,9 @@ export function App() {
       ) : (
         <ExportPage />
       )}
+      <QuickstartPanel />
       <GuideOverlay />
+      <WelcomeDialog />
       {dialog === 'settings' && <SettingsDialog onClose={() => setDialog(null)} />}
       {dialog === 'share' && <ShareDialog onClose={() => setDialog(null)} />}
       {dialog === 'shortcuts' && <ShortcutsDialog onClose={() => setDialog(null)} />}

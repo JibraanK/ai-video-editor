@@ -410,6 +410,15 @@ export const EDIT_COMMANDS: EditCommand[] = [
     }
   },
   {
+    name: 'set_clip_volumes',
+    description: 'Set the linear volume of several clips in one undoable step.',
+    inputSchema: obj({ volumes: { type: 'array', items: obj({ clipId: str(''), volume: num('Linear volume, 1 = unchanged') }, ['clipId', 'volume']) } }, ['volumes']),
+    run: (p, a) => {
+      for (const v of a.volumes as { clipId: string; volume: number }[]) getClip(p, v.clipId).volume = Math.max(0, v.volume)
+      return { count: a.volumes.length }
+    }
+  },
+  {
     name: 'add_text',
     description: `Add a text overlay. preset: ${TEXT_PRESETS.map((t) => t.id).join(', ')}.`,
     inputSchema: obj(

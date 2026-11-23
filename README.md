@@ -20,7 +20,7 @@ A clean, AI-native desktop video editor (Electron + React + TypeScript). It has 
 - **Multiplayer:** host or join a room. Edits are host-authoritative, and everyone sees live cursors, selections and playheads. Media streams from the host to guests.
 
 ## Requirements
-- Node 20+ (tested with 24) and npm
+- Node 22.22+ (tested with 24) and npm
 - FFmpeg and ffprobe on `PATH`, or set their paths in Settings
 - Optional: an OpenAI or Anthropic key (cloud agent, Whisper API), `whisper.cpp` or `openai-whisper` (local captions), and `claude`, `codex` or `gemini` CLIs
 

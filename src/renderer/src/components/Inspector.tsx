@@ -16,10 +16,16 @@ const RESOLUTIONS = [
 ]
 
 function Num({ label, value, onChange, step = 1, min, max }: { label: string; value: number; onChange: (v: number) => void; step?: number; min?: number; max?: number }) {
-  const [draft, setDraft] = useState(String(value))
+  const shown = String(Math.round(value * 1000) / 1000)
+  const [draft, setDraft] = useState(shown)
   useEffect(() => {
-    setDraft(String(Math.round(value * 1000) / 1000))
-  }, [value])
+    setDraft(shown)
+  }, [shown])
+  const commit = () => {
+    if (draft === shown) return
+    if (draft.trim() === '' || !Number.isFinite(Number(draft))) return setDraft(shown)
+    if (Number(draft) !== value) onChange(Number(draft))
+  }
   return (
     <label className="field">
       <span>{label}</span>
@@ -31,7 +37,7 @@ function Num({ label, value, onChange, step = 1, min, max }: { label: string; va
         max={max}
         value={draft}
         onChange={(e) => setDraft(e.target.value)}
-        onBlur={() => Number.isFinite(Number(draft)) && Number(draft) !== value && onChange(Number(draft))}
+        onBlur={commit}
         onKeyDown={(e) => e.key === 'Enter' && (e.target as HTMLInputElement).blur()}
       />
     </label>

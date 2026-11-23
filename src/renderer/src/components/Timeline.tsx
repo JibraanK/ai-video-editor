@@ -183,7 +183,7 @@ export function Timeline() {
   const fit = () => {
     const el = scroller.current
     if (!el) return
-    getState().set({ zoom: Math.min(400, Math.max(5, (el.clientWidth - HEADER_W - 48) / Math.max(1, duration))) })
+    getState().set({ zoom: Math.min(400, Math.max(1, (el.clientWidth - HEADER_W - 48) / Math.max(1, duration))) })
     el.scrollLeft = 0
   }
 
@@ -248,7 +248,7 @@ export function Timeline() {
         )}
         <div className="spacer" />
         <div className="pill-row" data-guide="timeline.zoom">
-          <button className="pill icon" title="Zoom out (−)" aria-label="Zoom out" onClick={() => getState().set({ zoom: Math.max(5, zoom / 1.25) })}>
+          <button className="pill icon" title="Zoom out (−)" aria-label="Zoom out" onClick={() => getState().set({ zoom: Math.max(1, zoom / 1.25) })}>
             <ZoomOut {...I} />
           </button>
           <button className="pill icon" title="Zoom in (+)" aria-label="Zoom in" onClick={() => getState().set({ zoom: Math.min(400, zoom * 1.25) })}>
@@ -264,7 +264,7 @@ export function Timeline() {
         ref={scroller}
         onWheel={(e) => {
           if (!e.ctrlKey && !e.metaKey) return
-          getState().set({ zoom: Math.min(400, Math.max(5, zoom * (e.deltaY < 0 ? 1.15 : 1 / 1.15))) })
+          getState().set({ zoom: Math.min(400, Math.max(1, zoom * (e.deltaY < 0 ? 1.15 : 1 / 1.15))) })
         }}
         onPointerMove={(e) => {
           const row = rowAt(e.clientY)

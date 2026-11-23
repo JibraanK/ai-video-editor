@@ -56,7 +56,7 @@ function useShortcuts(toggleAsk: () => void, setDialog: (d: Dialog) => void) {
         case '=':
           return s.set({ zoom: Math.min(400, s.zoom * 1.25) })
         case '-':
-          return s.set({ zoom: Math.max(5, s.zoom / 1.25) })
+          return s.set({ zoom: Math.max(1, s.zoom / 1.25) })
       }
       switch (k) {
         case 'v':

@@ -5,7 +5,7 @@ import { getState, onCommand, useStore } from '../store'
 import { importDialog, importPaths } from './actions'
 import { BUILTIN_GUIDES } from './builtinGuides'
 import { useGuide, type GuideStep } from './guide'
-import { milestoneFromCommand, milestonesFromProject, QUICKSTART_ORDER, type QuickstartId } from '@shared/quickstart'
+import { isSampleMedia, milestoneFromCommand, milestonesFromProject, QUICKSTART_ORDER, type QuickstartId } from '@shared/quickstart'
 
 const KEY = 'cutline.onboarding:v1'
 
@@ -49,8 +49,9 @@ useOnboarding.subscribe((s) => {
   localStorage.setItem(KEY, JSON.stringify({ welcomed, checklist, done, tutorialDone }))
 })
 
+/** Progress only counts in projects with the user's own footage, never while the tutorial runs. */
 export const markQuickstart = (id: QuickstartId) => {
-  if (!inTutorial()) useOnboarding.getState().mark(id)
+  if (!inTutorial() && getState().project.media.some((m) => !isSampleMedia(m))) useOnboarding.getState().mark(id)
 }
 
 const inTutorial = () => {

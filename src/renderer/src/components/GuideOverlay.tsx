@@ -10,6 +10,11 @@ export function GuideOverlay() {
 
   useEffect(() => {
     if (!active || !step) return
+    const t = step.target
+    if (t.startsWith('pool.')) getState().set({ pool: true })
+    else if (t.startsWith('inspector')) getState().set({ side: 'inspector' })
+    else if (t === 'mixer') getState().set({ side: 'mixer' })
+    else if (t.startsWith('agent.')) getState().set({ side: 'ask' })
     if (step.target.startsWith('export.') || step.target === 'page.export') getState().set({ page: step.target === 'page.export' ? getState().page : 'export' })
     else if (!step.target.startsWith('page.') && getState().page !== 'edit' && !document.querySelector(`[data-guide="${step.target}"]`)) getState().set({ page: 'edit' })
   }, [active, step])

@@ -19,7 +19,9 @@ export function ExportPage() {
   const captions = project.clips.filter((c) => project.tracks.find((t) => t.id === c.trackId)?.kind === 'caption').sort((a, b) => a.start - b.start)
 
   useEffect(() => window.api.onExportProgress(setProgress), [])
-  useEffect(() => setTo(duration), [duration])
+  useEffect(() => {
+    setTo(duration)
+  }, [duration])
 
   const start = async () => {
     const ext = preset.options.container

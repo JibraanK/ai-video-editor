@@ -44,6 +44,9 @@ CUTLINE_MCP_URL=http://127.0.0.1:47821/mcp node bin/mcp-stdio.mjs
 ## Collaboration
 Click **Share**, then **Host room**, and send the invite link (guests must be able to reach the host's port on your LAN, or through a tunnel). To run the room server on its own: `npm run collab-server`.
 
+## Design
+Near-black, minimal UI modelled on internetVin's custom editor: a top bar of pill actions, a large centred preview, a pill toolbar above a full-width timeline, and drawers for the Library (left) and Inspector / Mixer / Ask (right). Type: Pilowlava (wordmark), Orbitron (chrome labels), Chakra Petch (UI text) and JetBrains Mono (timecodes, track labels). All fonts are bundled under the SIL OFL in `src/renderer/src/assets/fonts`; icons are from `lucide-react`.
+
 ## Layout
 - `src/shared`: types, the pure command API (`commands.ts`), timeline maths, captions, FFmpeg export graph, agent tool defs
 - `src/main`: Electron main (FFmpeg, transcription, render, MCP server, agents, settings, IPC)

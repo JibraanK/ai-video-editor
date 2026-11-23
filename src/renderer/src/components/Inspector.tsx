@@ -17,7 +17,9 @@ const RESOLUTIONS = [
 
 function Num({ label, value, onChange, step = 1, min, max }: { label: string; value: number; onChange: (v: number) => void; step?: number; min?: number; max?: number }) {
   const [draft, setDraft] = useState(String(value))
-  useEffect(() => setDraft(String(Math.round(value * 1000) / 1000)), [value])
+  useEffect(() => {
+    setDraft(String(Math.round(value * 1000) / 1000))
+  }, [value])
   return (
     <label className="field">
       <span>{label}</span>

@@ -6,6 +6,7 @@ import type { CollabUser, Presence } from '../../collab/protocol'
 
 export type Page = 'edit' | 'export'
 export type Tool = 'select' | 'razor'
+export type Side = 'inspector' | 'mixer' | 'ask' | null
 
 export interface Toast {
   id: number
@@ -39,6 +40,9 @@ interface State {
   tool: Tool
   zoom: number
   page: Page
+  /** Left media drawer and right side drawer visibility. */
+  pool: boolean
+  side: Side
   waveforms: Record<string, { peaks: number[]; peaksPerSecond: number }>
   toasts: Toast[]
   busy: string | null
@@ -80,6 +84,8 @@ export const useStore = create<State>((set, get) => ({
   tool: 'select',
   zoom: 60,
   page: 'edit',
+  pool: false,
+  side: null,
   waveforms: {},
   toasts: [],
   busy: null,

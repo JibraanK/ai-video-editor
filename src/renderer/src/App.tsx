@@ -88,7 +88,8 @@ function useShortcuts(toggleAsk: () => void, setDialog: (d: Dialog) => void) {
 export function App() {
   const page = useStore((s) => s.page)
   const toasts = useStore((s) => s.toasts)
-  const [ask, setAsk] = useState(true)
+  const pool = useStore((s) => s.pool)
+  const side = useStore((s) => s.side)
   const [dialog, setDialog] = useState<Dialog>(null)
 
   useEffect(() => registerRpc(), [])
@@ -110,23 +111,23 @@ export function App() {
     window.addEventListener('beforeunload', warn)
     return () => window.removeEventListener('beforeunload', warn)
   }, [])
-  const toggleAsk = () => setAsk((a) => !a)
+  const toggleAsk = () => getState().set({ side: getState().side === 'ask' ? null : 'ask' })
   useShortcuts(toggleAsk, setDialog)
 
   return (
     <div className="app">
-      <TopBar onAsk={toggleAsk} onSettings={() => setDialog('settings')} onShare={() => setDialog('share')} onShortcuts={() => setDialog('shortcuts')} />
+      <TopBar onSettings={() => setDialog('settings')} onShare={() => setDialog('share')} onShortcuts={() => setDialog('shortcuts')} />
       {page === 'edit' ? (
-        <div className={`workspace${ask ? ' with-agent' : ''}`}>
-          <MediaPool />
+        <div className={`workspace${pool ? ' has-pool' : ''}${side ? ' has-side' : ''}`}>
+          {pool && <MediaPool />}
           <div className="center">
             <Preview />
           </div>
-          <Inspector />
-          {ask && <AgentPanel onClose={() => setAsk(false)} />}
+          {side === 'inspector' && <Inspector />}
+          {side === 'mixer' && <Mixer />}
+          {side === 'ask' && <AgentPanel onClose={() => getState().set({ side: null })} />}
           <div className="bottom">
             <Timeline />
-            <Mixer />
           </div>
         </div>
       ) : (

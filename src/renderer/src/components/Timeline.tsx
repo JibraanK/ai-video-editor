@@ -1,15 +1,19 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { clipEnd, formatTimecode, projectDuration, snap, snapPoints } from '@shared/timeline'
+import { clipEnd, clipsAt, formatTimecode, projectDuration, snap, snapPoints } from '@shared/timeline'
 import type { Clip, MediaItem, Track } from '@shared/types'
 import { getState, useStore } from '../store'
 import { publishPresence } from '../lib/collab'
 import { thumbUrl } from '../lib/media'
-import { importPaths } from '../lib/actions'
+import { autoCut, importPaths, suggestCuts } from '../lib/actions'
 import { CursorArrow } from './Cursors'
+import { Bookmark, Eye, EyeOff, Lock, LockOpen, Magnet, Maximize2, Minus, MousePointer2, Plus, Scissors, Slice, SplitSquareHorizontal, Trash2, WandSparkles, X, ZoomIn, ZoomOut } from 'lucide-react'
 
-const HEADER_W = 168
-const RULER_H = 28
-export const trackHeight = (t: Track) => (t.kind === 'video' ? 58 : t.kind === 'audio' ? 50 : 36)
+const I = { size: 13, strokeWidth: 1.75 }
+const B = { size: 11, strokeWidth: 2 }
+
+const HEADER_W = 136
+const RULER_H = 24
+export const trackHeight = (t: Track) => (t.kind === 'video' ? 46 : t.kind === 'audio' ? 38 : 26)
 
 type Drag =
   | { kind: 'move'; ids: string[]; anchor: Clip; startX: number; startY: number; dt: number; trackId: string }
@@ -33,11 +37,11 @@ function Waveform({ clip, media, width, height }: { clip: Clip; media: MediaItem
     c.height = height
     const ctx = c.getContext('2d')!
     ctx.clearRect(0, 0, w, height)
-    ctx.fillStyle = 'rgba(255,255,255,0.55)'
+    ctx.fillStyle = 'rgba(184, 206, 192, 0.72)'
     for (let x = 0; x < w; x++) {
       const t = clip.in + (x / w) * clip.duration
       const v = wf.peaks[Math.floor(t * wf.peaksPerSecond)] ?? 0
-      const h = Math.max(1, v * height * 0.9)
+      const h = Math.max(1, v * height * 0.95)
       ctx.fillRect(x, (height - h) / 2, 1, h)
     }
   }, [wf, width, height, clip.in, clip.duration])
@@ -50,6 +54,7 @@ export function Timeline() {
   const playhead = useStore((s) => s.playhead)
   const selection = useStore((s) => s.selection)
   const tool = useStore((s) => s.tool)
+  const busy = useStore((s) => s.busy)
   const peers = useStore((s) => s.collab.peers)
   const scroller = useRef<HTMLDivElement>(null)
   const [drag, setDrag] = useState<Drag | null>(null)
@@ -162,6 +167,26 @@ export function Timeline() {
     }
   }
 
+  const splitAtPlayhead = () => {
+    const s = getState()
+    const ids = s.selection.length ? s.selection : clipsAt(s.project, s.playhead).map((c) => c.id)
+    if (ids.length) void s.dispatch('split', { time: s.playhead, clipIds: ids }).catch((err) => s.toast(err.message, 'error'))
+  }
+  const nudgeGain = (db: number) => {
+    const s = getState()
+    const f = Math.pow(10, db / 20)
+    for (const id of s.selection) {
+      const c = s.project.clips.find((x) => x.id === id)
+      if (c && c.mediaId) void s.dispatch('update_clip', { clipId: id, volume: Math.min(4, Math.max(0, c.volume * f)) }).catch((err) => s.toast(err.message, 'error'))
+    }
+  }
+  const fit = () => {
+    const el = scroller.current
+    if (!el) return
+    getState().set({ zoom: Math.min(400, Math.max(5, (el.clientWidth - HEADER_W - 48) / Math.max(1, duration))) })
+    el.scrollLeft = 0
+  }
+
   const update = (trackId: string, patch: Partial<Track>) => void getState().dispatch('update_track', { trackId, ...patch })
   const tickStep = [0.5, 1, 2, 5, 10, 15, 30, 60, 120, 300].find((s) => s * zoom >= 70) ?? 600
   const fps = project.settings.fps
@@ -170,34 +195,69 @@ export function Timeline() {
   return (
     <div className="timeline" data-guide="timeline">
       <div className="timeline-toolbar">
-        <span className="muted">Timeline</span>
-        <button className="btn sm" data-guide="timeline.add-track" onClick={() => getState().dispatch('add_track', { kind: 'video' })}>
-          + Video
-        </button>
-        <button className="btn sm" onClick={() => getState().dispatch('add_track', { kind: 'audio' })}>
-          + Audio
-        </button>
-        <button className="btn sm" onClick={() => getState().dispatch('add_track', { kind: 'text' })}>
-          + Text
-        </button>
+        <div className="pill-row">
+          <button className={`pill${project.magnetic ? ' on' : ''}`} data-guide="topbar.magnetic" title="Magnetic timeline (N)" aria-pressed={project.magnetic} onClick={() => getState().dispatch('set_magnetic', { enabled: !project.magnetic })}>
+            <Magnet {...I} /> Magnetic
+          </button>
+          <button className={`pill${tool === 'select' ? ' on' : ''}`} data-guide="topbar.tool-select" title="Select (V)" aria-pressed={tool === 'select'} onClick={() => getState().set({ tool: 'select' })}>
+            <MousePointer2 {...I} /> Select
+          </button>
+          <button className={`pill${tool === 'razor' ? ' on' : ''}`} data-guide="topbar.tool-razor" title="Blade (B)" aria-pressed={tool === 'razor'} onClick={() => getState().set({ tool: 'razor' })}>
+            <Slice {...I} /> Blade
+          </button>
+        </div>
+        <div className="pill-row">
+          <button className="pill" data-guide="timeline.split" title="Split at playhead (S)" onClick={splitAtPlayhead}>
+            <SplitSquareHorizontal {...I} /> Split
+          </button>
+          <button className="pill" data-guide="timeline.delete" title="Delete (Del)" disabled={!selection.length} onClick={() => getState().dispatch('delete_clips', { clipIds: selection, ripple: project.magnetic })}>
+            <Trash2 {...I} /> Delete
+          </button>
+          <button className="pill" title="Add marker at playhead (M)" onClick={() => getState().dispatch('add_marker', { time: playhead })}>
+            <Bookmark {...I} /> Marker
+          </button>
+        </div>
+        <div className="pill-row" data-guide="timeline.gain">
+          <button className="pill" title="Selected clips −1 dB" disabled={!selection.length} onClick={() => nudgeGain(-1)}>
+            <Minus {...I} /> dB
+          </button>
+          <button className="pill" title="Selected clips +1 dB" disabled={!selection.length} onClick={() => nudgeGain(1)}>
+            <Plus {...I} /> dB
+          </button>
+        </div>
+        <div className="pill-row">
+          <button className="pill" data-guide="topbar.suggest" onClick={suggestCuts} disabled={!!busy}>
+            <WandSparkles {...I} /> Suggest cuts
+          </button>
+          <button className="pill" data-guide="topbar.autocut" onClick={autoCut} disabled={!!busy}>
+            <Scissors {...I} /> Auto cut
+          </button>
+        </div>
         {suggestions.length > 0 && (
           <div className="suggest-bar" data-guide="timeline.suggestions">
             <span>
-              {suggestions.length} suggested cut{suggestions.length > 1 ? 's' : ''} ({suggestions.reduce((s, x) => s + (x.end - x.start), 0).toFixed(1)}s)
+              {suggestions.length} suggested cut{suggestions.length > 1 ? 's' : ''} · {suggestions.reduce((s, x) => s + (x.end - x.start), 0).toFixed(1)}s
             </span>
-            <button className="btn sm primary" onClick={() => getState().dispatch('apply_suggestions', {})}>
+            <button className="pill accent on" onClick={() => getState().dispatch('apply_suggestions', {})}>
               Apply all
             </button>
-            <button className="btn sm" onClick={() => getState().dispatch('clear_suggestions', {})}>
+            <button className="pill" onClick={() => getState().dispatch('clear_suggestions', {})}>
               Dismiss
             </button>
           </div>
         )}
         <div className="spacer" />
-        <label className="zoom" data-guide="timeline.zoom">
-          <span className="muted">Zoom</span>
-          <input type="range" min={5} max={400} value={zoom} onChange={(e) => getState().set({ zoom: Number(e.target.value) })} />
-        </label>
+        <div className="pill-row" data-guide="timeline.zoom">
+          <button className="pill icon" title="Zoom out (−)" aria-label="Zoom out" onClick={() => getState().set({ zoom: Math.max(5, zoom / 1.25) })}>
+            <ZoomOut {...I} />
+          </button>
+          <button className="pill icon" title="Zoom in (+)" aria-label="Zoom in" onClick={() => getState().set({ zoom: Math.min(400, zoom * 1.25) })}>
+            <ZoomIn {...I} />
+          </button>
+          <button className="pill" title="Fit timeline to view" onClick={fit}>
+            <Maximize2 {...I} /> Fit
+          </button>
+        </div>
       </div>
       <div
         className="timeline-scroll"
@@ -250,33 +310,43 @@ export function Timeline() {
               <div key={m.id} className="marker" style={{ left: m.time * zoom, background: m.color }} title={m.label} />
             ))}
           </div>
-          <div className="ruler-corner" style={{ width: HEADER_W }} />
+          <div className="ruler-corner" style={{ width: HEADER_W }}>
+            <button className="add-track" data-guide="timeline.add-track" title="Add video track" onClick={() => getState().dispatch('add_track', { kind: 'video' })}>
+              +V
+            </button>
+            <button className="add-track" title="Add audio track" onClick={() => getState().dispatch('add_track', { kind: 'audio' })}>
+              +A
+            </button>
+            <button className="add-track" title="Add text track" onClick={() => getState().dispatch('add_track', { kind: 'text' })}>
+              +T
+            </button>
+          </div>
           {rows.map(({ track, y, h }) => (
             <div key={track.id} className={`track-row kind-${track.kind}${dropHint?.trackId === track.id ? ' drop' : ''}`} style={{ top: y + RULER_H, height: h, width: width + HEADER_W }}>
               <div className="track-header" style={{ width: HEADER_W }}>
-                <input className="track-name" value={track.name} onChange={(e) => update(track.id, { name: e.target.value })} />
+                <input className="track-name" value={track.name} spellCheck={false} aria-label="Track name" onChange={(e) => update(track.id, { name: e.target.value })} />
                 <div className="track-btns">
+                  <button className="tbtn extra" title="Delete track" aria-label="Delete track" onClick={() => getState().dispatch('remove_track', { trackId: track.id })}>
+                    <X {...B} />
+                  </button>
+                  <button className={`tbtn${track.locked ? ' on' : ' extra'}`} title={track.locked ? 'Unlock' : 'Lock'} aria-pressed={!!track.locked} onClick={() => update(track.id, { locked: !track.locked })}>
+                    {track.locked ? <Lock {...B} /> : <LockOpen {...B} />}
+                  </button>
                   {track.kind !== 'audio' && (
-                    <button className={`tbtn${track.hidden ? ' on' : ''}`} title="Hide" onClick={() => update(track.id, { hidden: !track.hidden })}>
-                      {track.hidden ? '◌' : '◉'}
+                    <button className={`tbtn${track.hidden ? ' on' : ''}`} title={track.hidden ? 'Show' : 'Hide'} aria-pressed={!!track.hidden} onClick={() => update(track.id, { hidden: !track.hidden })}>
+                      {track.hidden ? <EyeOff {...B} /> : <Eye {...B} />}
                     </button>
                   )}
                   {(track.kind === 'audio' || track.kind === 'video') && (
                     <>
-                      <button className={`tbtn${track.muted ? ' on warn' : ''}`} title="Mute" onClick={() => update(track.id, { muted: !track.muted })}>
+                      <button className={`tbtn mute${track.muted ? ' on' : ''}`} title="Mute" aria-pressed={!!track.muted} onClick={() => update(track.id, { muted: !track.muted })}>
                         M
                       </button>
-                      <button className={`tbtn${track.solo ? ' on solo' : ''}`} title="Solo" onClick={() => update(track.id, { solo: !track.solo })}>
+                      <button className={`tbtn solo${track.solo ? ' on' : ''}`} title="Solo" aria-pressed={!!track.solo} onClick={() => update(track.id, { solo: !track.solo })}>
                         S
                       </button>
                     </>
                   )}
-                  <button className={`tbtn${track.locked ? ' on' : ''}`} title="Lock" onClick={() => update(track.id, { locked: !track.locked })}>
-                    {track.locked ? '🔒' : '🔓'}
-                  </button>
-                  <button className="tbtn" title="Delete track" onClick={() => getState().dispatch('remove_track', { trackId: track.id })}>
-                    ✕
-                  </button>
                 </div>
               </div>
             </div>
@@ -308,7 +378,7 @@ export function Timeline() {
                   title={c.name ?? m?.name ?? c.text}
                 >
                   {thumb && row.track.kind === 'video' && <div className="clip-thumb" style={{ backgroundImage: `url("${thumb}")` }} />}
-                  {m && m.hasAudio && row.track.kind === 'audio' && <Waveform clip={c} media={m} width={w} height={r.h - 18} />}
+                  {m && m.hasAudio && row.track.kind === 'audio' && <Waveform clip={c} media={m} width={w} height={r.h - 14} />}
                   <span className="clip-label">{c.text ?? c.name ?? m?.name ?? 'Clip'}</span>
                   <div className="trim l" onPointerDown={(e) => onClipDown(e, c, 'l')} />
                   <div className="trim r" onPointerDown={(e) => onClipDown(e, c, 'r')} />

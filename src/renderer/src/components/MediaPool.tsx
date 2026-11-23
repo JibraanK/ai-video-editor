@@ -1,3 +1,4 @@
+import { AudioLines, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { TEXT_PRESETS } from '@shared/presets'
 import { formatTimecode } from '@shared/timeline'
@@ -48,7 +49,7 @@ function MediaTab() {
               title={`${m.name}\nDouble-click to append, drag to place`}
             >
               <div className="media-thumb" style={thumbUrl(m) ? { backgroundImage: `url("${thumbUrl(m)}")` } : undefined}>
-                {m.kind === 'audio' && <span className="media-icon">♪</span>}
+                {m.kind === 'audio' && <AudioLines className="media-icon" size={22} strokeWidth={1.5} />}
                 {m.kind !== 'image' && <span className="media-dur">{formatTimecode(m.duration).slice(3, 8)}</span>}
               </div>
               <div className="media-name">{m.name}</div>
@@ -150,7 +151,7 @@ function TemplatesTab() {
             </button>
             {!t.builtin && (
               <button className="btn sm ghost" onClick={() => window.api.deleteTemplate(t.id).then(reload)}>
-                ✕
+                <X size={14} strokeWidth={1.75} />
               </button>
             )}
           </div>
@@ -184,7 +185,7 @@ function PluginsTab() {
               Run
             </button>
             <button className="btn sm ghost" onClick={() => confirm(`Delete ${p.name}?`) && usePlugins.getState().remove(p.id)}>
-              ✕
+              <X size={14} strokeWidth={1.75} />
             </button>
           </div>
         </div>

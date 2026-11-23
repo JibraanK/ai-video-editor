@@ -1,3 +1,4 @@
+import { RotateCcw, X } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { getState } from '../store'
 import { useGuide } from '../lib/guide'
@@ -59,8 +60,12 @@ export function AgentPanel({ onClose }: { onClose: () => void }) {
       }),
     []
   )
-  useEffect(() => scroll.current?.scrollTo(0, scroll.current.scrollHeight), [msgs])
-  useEffect(() => localStorage.setItem('cutline.agentMode', mode), [mode])
+  useEffect(() => {
+    scroll.current?.scrollTo(0, scroll.current.scrollHeight)
+  }, [msgs])
+  useEffect(() => {
+    localStorage.setItem('cutline.agentMode', mode)
+  }, [mode])
 
   const send = async (text = input) => {
     const prompt = text.trim()
@@ -99,10 +104,10 @@ export function AgentPanel({ onClose }: { onClose: () => void }) {
               setMsgs([])
             }}
           >
-            ⟲
+            <RotateCcw size={14} strokeWidth={1.75} />
           </button>
           <button className="btn sm ghost" onClick={onClose}>
-            ✕
+            <X size={14} strokeWidth={1.75} />
           </button>
         </div>
       </div>

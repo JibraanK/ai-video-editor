@@ -1,3 +1,4 @@
+import { X } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { getState, useStore } from '../store'
 import { COLORS, hostRoom, joinRoom, leaveRoom, loadIdentity, saveIdentity } from '../lib/collab'
@@ -9,7 +10,7 @@ function Modal({ title, onClose, children }: { title: string; onClose: () => voi
         <div className="row between">
           <div className="section-title">{title}</div>
           <button className="btn sm ghost" onClick={onClose}>
-            ✕
+            <X size={14} strokeWidth={1.75} />
           </button>
         </div>
         {children}

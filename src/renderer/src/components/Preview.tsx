@@ -5,6 +5,9 @@ import { getState, useStore } from '../store'
 import { mediaUrl } from '../lib/media'
 import { drawTextClip } from '../lib/textRender'
 import { AreaCursors, areaPointer } from './Cursors'
+import { ChevronLeft, ChevronRight, Pause, Play, SkipBack, SkipForward } from 'lucide-react'
+
+const I = { size: 14, strokeWidth: 1.75 }
 
 type El = HTMLVideoElement | HTMLAudioElement | HTMLImageElement
 const pool = new Map<string, { el: El; src: string }>()
@@ -143,21 +146,23 @@ export function Preview() {
         <AreaCursors area="preview" />
       </div>
       <div className="transport">
-        <button className="icon-btn" title="Go to start (Home)" onClick={() => getState().setPlayhead(0)}>
-          ⏮
-        </button>
-        <button className="icon-btn" title="Back 1 frame (←)" onClick={() => getState().setPlayhead(playhead - 1 / settings.fps)}>
-          ◀
-        </button>
-        <button className="play-btn" data-guide="preview.play" title="Play / pause (Space)" onClick={toggle}>
-          {playing ? '❚❚' : '▶'}
-        </button>
-        <button className="icon-btn" title="Forward 1 frame (→)" onClick={() => getState().setPlayhead(playhead + 1 / settings.fps)}>
-          ▶
-        </button>
-        <button className="icon-btn" title="Go to end (End)" onClick={() => getState().setPlayhead(duration)}>
-          ⏭
-        </button>
+        <div className="transport-pill">
+          <button className="icon-btn" title="Go to start (Home)" onClick={() => getState().setPlayhead(0)}>
+            <SkipBack {...I} />
+          </button>
+          <button className="icon-btn" title="Back 1 frame (←)" onClick={() => getState().setPlayhead(playhead - 1 / settings.fps)}>
+            <ChevronLeft {...I} />
+          </button>
+          <button className={`play-btn${playing ? ' on' : ''}`} data-guide="preview.play" title="Play / pause (Space)" aria-label={playing ? 'Pause' : 'Play'} onClick={toggle}>
+            {playing ? <Pause size={14} strokeWidth={2} fill="currentColor" /> : <Play size={14} strokeWidth={2} fill="currentColor" />}
+          </button>
+          <button className="icon-btn" title="Forward 1 frame (→)" onClick={() => getState().setPlayhead(playhead + 1 / settings.fps)}>
+            <ChevronRight {...I} />
+          </button>
+          <button className="icon-btn" title="Go to end (End)" onClick={() => getState().setPlayhead(duration)}>
+            <SkipForward {...I} />
+          </button>
+        </div>
         <span className="timecode" data-guide="preview.timecode">
           {formatTimecode(playhead, settings.fps)} <span className="muted">/ {formatTimecode(duration, settings.fps)}</span>
         </span>

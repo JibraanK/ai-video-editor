@@ -2,7 +2,13 @@ import { create } from 'zustand'
 
 /** Every element tagged with data-guide="<id>" can be pointed at by the assistant. */
 export const GUIDE_TARGETS: Record<string, string> = {
-  'topbar.import': 'Import media files into the Media Pool',
+  'topbar.import': 'Add footage: import media files into the Media Pool',
+  'topbar.pool': 'Toggle the Media Pool drawer (media, text presets, templates, plugins)',
+  'topbar.inspector': 'Toggle the Inspector drawer',
+  'topbar.mixer': 'Toggle the audio Mixer drawer',
+  'timeline.split': 'Split selected clips (or clips under the playhead) at the playhead (S)',
+  'timeline.delete': 'Delete the selected clips',
+  'timeline.gain': 'Lower or raise the selected clips by 1 dB',
   'topbar.undo': 'Undo / redo (Ctrl+Z / Ctrl+Shift+Z)',
   'topbar.magnetic': 'Magnetic timeline toggle: closes gaps on the main video track automatically',
   'topbar.tool-select': 'Selection tool (V): select, move and trim clips',

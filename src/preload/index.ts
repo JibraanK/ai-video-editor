@@ -4,7 +4,9 @@ const invoke = (ch: string, ...args: unknown[]) => ipcRenderer.invoke(ch, ...arg
 const on = (ch: string, cb: (payload: any) => void) => {
   const listener = (_e: unknown, payload: any) => cb(payload)
   ipcRenderer.on(ch, listener)
-  return () => ipcRenderer.removeListener(ch, listener)
+  return () => {
+    ipcRenderer.removeListener(ch, listener)
+  }
 }
 
 const api = {

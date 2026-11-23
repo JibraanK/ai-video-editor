@@ -175,10 +175,10 @@ export function Timeline() {
   const nudgeGain = (db: number) => {
     const s = getState()
     const f = Math.pow(10, db / 20)
-    for (const id of s.selection) {
-      const c = s.project.clips.find((x) => x.id === id)
-      if (c && c.mediaId) void s.dispatch('update_clip', { clipId: id, volume: Math.min(4, Math.max(0, c.volume * f)) }).catch((err) => s.toast(err.message, 'error'))
-    }
+    const p = structuredClone(s.project)
+    const sel = new Set(s.selection)
+    for (const c of p.clips) if (sel.has(c.id) && c.mediaId) c.volume = Math.min(4, Math.max(0, c.volume * f))
+    s.setProject(p, `Gain ${db > 0 ? '+' : ''}${db} dB`)
   }
   const fit = () => {
     const el = scroller.current

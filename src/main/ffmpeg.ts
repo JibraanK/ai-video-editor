@@ -1,7 +1,7 @@
 import { app } from 'electron'
 import { spawn } from 'node:child_process'
 import { createHash } from 'node:crypto'
-import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync, renameSync, statSync, writeFileSync } from 'node:fs'
 import { basename, extname, join } from 'node:path'
 import { uid } from '@shared/id'
 import type { MediaItem } from '@shared/types'
@@ -170,4 +170,22 @@ export async function detectScenes(path: string, threshold = 0.35, start?: numbe
   const times: number[] = []
   for (const m of r.stderr.matchAll(/pts_time:([\d.]+)/g)) times.push(Number(m[1]) + (start ?? 0))
   return times
+}
+
+/** Generates (once) a short test-pattern clip with tone bursts and silent gaps for the onboarding tutorial. */
+export async function sampleClip(): Promise<string> {
+  const out = join(cacheDir('samples'), 'cutline-sample-v1.mp4')
+  if (existsSync(out)) return out
+  const tmp = `${out}.part.mp4`
+  const input = [
+    '-hide_banner', '-y',
+    '-f', 'lavfi', '-i', 'testsrc2=size=1280x720:rate=30:duration=12',
+    '-f', 'lavfi', '-i', "aevalsrc='0.35*sin(2*PI*220*t)*lt(mod(t\\,4)\\,2.6)':s=48000:d=12"
+  ]
+  const audio = ['-c:a', 'aac', '-b:a', '128k', '-shortest']
+  let r = await ffmpeg([...input, '-c:v', 'libx264', '-preset', 'veryfast', '-pix_fmt', 'yuv420p', ...audio, tmp])
+  if (r.code !== 0) r = await ffmpeg([...input, '-c:v', 'mpeg4', '-q:v', '4', ...audio, tmp])
+  if (r.code !== 0) throw new Error(`Could not create the sample clip: ${r.stderr.trim().split('\n').pop()}`)
+  renameSync(tmp, out)
+  return out
 }

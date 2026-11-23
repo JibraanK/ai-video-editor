@@ -4,6 +4,7 @@ import { EXPORT_PRESETS } from '@shared/presets'
 import { formatTimecode, projectDuration } from '@shared/timeline'
 import type { ExportOptions } from '@shared/types'
 import { getState, useStore } from '../store'
+import { markQuickstart } from '../lib/onboarding'
 import { Preview } from './Preview'
 
 export function ExportPage() {
@@ -19,6 +20,9 @@ export function ExportPage() {
   const captions = project.clips.filter((c) => project.tracks.find((t) => t.id === c.trackId)?.kind === 'caption').sort((a, b) => a.start - b.start)
 
   useEffect(() => window.api.onExportProgress(setProgress), [])
+  useEffect(() => {
+    if (progress?.status === 'done') markQuickstart('export')
+  }, [progress?.status])
   useEffect(() => {
     setTo(duration)
   }, [duration])

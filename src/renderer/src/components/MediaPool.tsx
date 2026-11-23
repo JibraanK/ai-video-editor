@@ -38,7 +38,7 @@ function MediaTab() {
           </button>
         </div>
       ) : (
-        <div className="media-grid">
+        <div className="media-grid" data-guide="pool.items">
           {media.map((m) => (
             <div
               key={m.id}

@@ -17,6 +17,7 @@ const api = {
   savePathDialog: (name: string, filters?: { name: string; extensions: string[] }[]) => invoke('dialog:savePath', name, filters),
   importMedia: (paths: string[]) => invoke('media:import', paths),
   waveform: (path: string) => invoke('media:waveform', path),
+  sampleClip: () => invoke('media:sample') as Promise<string>,
   saveProject: (project: unknown, path?: string) => invoke('project:save', project, path),
   openProject: () => invoke('project:open'),
   writeFile: (path: string, content: string) => invoke('file:write', path, content),

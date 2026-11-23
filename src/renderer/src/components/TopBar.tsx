@@ -1,7 +1,8 @@
-import { AudioLines, Captions, FilePlus2, FolderOpen, Keyboard, Library, Plus, Redo2, Save, Settings2, Share2, SlidersHorizontal, Sparkles, Undo2 } from 'lucide-react'
+import { AudioLines, Captions, FilePlus2, FolderOpen, Library, Plus, Redo2, Save, Settings2, Share2, SlidersHorizontal, Sparkles, Undo2 } from 'lucide-react'
 import { formatTimecode, projectDuration } from '@shared/timeline'
 import { getState, useStore, type Side } from '../store'
 import { autoCaptions, importDialog, newProject, openProject, saveProject } from '../lib/actions'
+import { HelpMenu } from './Onboarding'
 
 const I = { size: 14, strokeWidth: 1.75 }
 
@@ -103,9 +104,7 @@ export function TopBar({ onSettings, onShare, onShortcuts }: { onSettings: () =>
         <button className="icon-btn" title="Redo (Ctrl+Shift+Z)" disabled={!canRedo} onClick={() => getState().redo()}>
           <Redo2 {...I} />
         </button>
-        <button className="icon-btn" title="Shortcuts (?)" onClick={onShortcuts}>
-          <Keyboard {...I} />
-        </button>
+        <HelpMenu onShortcuts={onShortcuts} />
         <button className="icon-btn" data-guide="topbar.settings" title="Settings" onClick={onSettings}>
           <Settings2 {...I} />
         </button>

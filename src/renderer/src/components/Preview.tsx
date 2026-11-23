@@ -5,6 +5,7 @@ import { getState, useStore } from '../store'
 import { mediaUrl } from '../lib/media'
 import { drawTextClip } from '../lib/textRender'
 import { AreaCursors, areaPointer } from './Cursors'
+import { EmptyStage } from './Onboarding'
 import { ChevronLeft, ChevronRight, Pause, Play, SkipBack, SkipForward } from 'lucide-react'
 
 const I = { size: 14, strokeWidth: 1.75 }
@@ -144,6 +145,7 @@ export function Preview() {
       <div className="preview-stage" {...areaPointer('preview')}>
         <canvas ref={canvas} width={settings.width} height={settings.height} style={{ aspectRatio: `${settings.width}/${settings.height}` }} onClick={toggle} />
         <AreaCursors area="preview" />
+        {duration === 0 && <EmptyStage />}
       </div>
       <div className="transport">
         <div className="transport-pill">

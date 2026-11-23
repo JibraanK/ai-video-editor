@@ -25,6 +25,7 @@ function Num({ label, value, onChange, step = 1, min, max }: { label: string; va
     if (draft === shown) return
     if (draft.trim() === '' || !Number.isFinite(Number(draft))) return setDraft(shown)
     if (Number(draft) !== value) onChange(Number(draft))
+    setDraft(shown)
   }
   return (
     <label className="field">

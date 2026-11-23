@@ -33,6 +33,11 @@ npm run typecheck && npm test
 ```
 If Electron fails to start after install, run `node node_modules/electron/install.js`.
 
+## Contributing
+- `npm install` sets up git hooks (Husky): pre-commit lints staged files, pre-push runs typecheck and tests.
+- CI (`.github/workflows/ci.yml`) runs lint, typecheck, tests and build on every PR and on `main`.
+- `main` is protected by the ruleset in `.github/rulesets/main.json` (PRs only, CI must pass, squash merges, no force pushes). Import it under Settings → Rules → Rulesets.
+
 ## Connect an external agent (MCP)
 The MCP server starts with the app. Open Ask Cutline, then the MCP card, to copy configs. You can also connect manually:
 ```bash

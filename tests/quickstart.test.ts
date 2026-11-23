@@ -18,6 +18,12 @@ describe('quickstart milestones', () => {
     expect(milestonesFromProject(suggested)).toContain('ai')
   })
 
+  it('ignores the tutorial sample clip', () => {
+    const p = createProject('t')
+    p.media = [{ ...media, path: '/cache/samples/cutline-sample-v1.mp4' }]
+    expect(milestonesFromProject(applyCommand(p, 'add_clip', { mediaId: 'a' }).project)).toEqual([])
+  })
+
   it('maps edit commands to milestones', () => {
     expect(milestoneFromCommand('split')).toBe('cut')
     expect(milestoneFromCommand('apply_suggestions')).toBe('cut')

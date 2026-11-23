@@ -4,6 +4,7 @@ import { createHash } from 'node:crypto'
 import { existsSync, mkdirSync, readFileSync, renameSync, statSync, writeFileSync } from 'node:fs'
 import { basename, extname, join } from 'node:path'
 import { uid } from '@shared/id'
+import { SAMPLE_CLIP_NAME } from '@shared/quickstart'
 import type { MediaItem } from '@shared/types'
 import { getSettings } from './settings'
 
@@ -174,7 +175,7 @@ export async function detectScenes(path: string, threshold = 0.35, start?: numbe
 
 /** Generates (once) a short test-pattern clip with tone bursts and silent gaps for the onboarding tutorial. */
 export async function sampleClip(): Promise<string> {
-  const out = join(cacheDir('samples'), 'cutline-sample-v1.mp4')
+  const out = join(cacheDir('samples'), SAMPLE_CLIP_NAME)
   if (existsSync(out)) return out
   const tmp = `${out}.part.mp4`
   const input = [

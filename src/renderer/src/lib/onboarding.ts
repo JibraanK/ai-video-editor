@@ -53,10 +53,12 @@ export const markQuickstart = (id: QuickstartId) => {
   if (!inTutorial()) useOnboarding.getState().mark(id)
 }
 
-let tutorialProjectId: string | null = null
-const inTutorial = () => getState().project.id === tutorialProjectId
+const inTutorial = () => {
+  const g = useGuide.getState()
+  return g.active && g.title === 'Tutorial'
+}
 
-/** Ticks quickstart items off as the user does them in their own projects (the tutorial sandbox doesn't count). */
+/** Ticks quickstart items off as the user does them in their own projects (the tutorial and its sample clip don't count). */
 export function trackOnboarding(): () => void {
   const fromProject = () => milestonesFromProject(getState().project).forEach(markQuickstart)
   fromProject()
@@ -152,7 +154,6 @@ export async function startTutorial(): Promise<void> {
   }
   if (getState().dirty && !confirm('The tutorial opens a fresh project. Discard unsaved changes?')) return
   const project = createProject('Tutorial')
-  tutorialProjectId = project.id
   s.setProject(project, 'New', { resetHistory: true })
   s.set({ projectPath: null, playhead: 0, playing: false, selection: [], page: 'edit', pool: true, side: null, tool: 'select' })
   const [media] = await importPaths([path])

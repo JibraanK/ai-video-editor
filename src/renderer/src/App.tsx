@@ -23,7 +23,12 @@ function useShortcuts(toggleAsk: () => void, setDialog: (d: Dialog) => void) {
       const t = e.target as HTMLElement
       const mod = e.ctrlKey || e.metaKey
       const k = e.key.toLowerCase()
-      if (mod && k === 'k') return e.preventDefault(), toggleAsk()
+      if (mod && k === 'k') {
+        e.preventDefault()
+        // Commit blur-saved fields (e.g. Inspector numbers) before their drawer unmounts.
+        ;(document.activeElement as HTMLElement | null)?.blur()
+        return toggleAsk()
+      }
       if (t.closest('input, textarea, select, [contenteditable]')) return
       const s = getState()
       const fps = s.project.settings.fps

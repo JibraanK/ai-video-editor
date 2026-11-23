@@ -240,7 +240,7 @@ textarea.input { resize: vertical; }
 .clip-label { position: absolute; left: 5px; top: 2px; right: 5px; font-family: var(--font-mono); font-size: 9.5px; color: #d8d8dc; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-shadow: 0 1px 2px rgba(0,0,0,.8); pointer-events: none; }
 .clip.kind-caption .clip-label, .clip.kind-text .clip-label { top: 50%; transform: translateY(-50%); }
 .waveform { position: absolute; left: 0; bottom: 1px; pointer-events: none; }
-.trim { position: absolute; top: 0; bottom: 0; width: 6px; cursor: ew-resize; }
+.trim { position: absolute; top: 0; bottom: 0; width: min(6px, 30%); cursor: ew-resize; }
 .trim.l { left: 0; } .trim.r { right: 0; }
 .suggest-range { position: absolute; top: 0; background: repeating-linear-gradient(45deg, rgba(255,61,154,.24) 0 6px, rgba(255,61,154,.1) 6px 12px); border-left: 1px solid var(--pink); border-right: 1px solid var(--pink); cursor: pointer; z-index: 1; }
 .drop-line { position: absolute; top: 0; width: 2px; background: var(--accent); pointer-events: none; }

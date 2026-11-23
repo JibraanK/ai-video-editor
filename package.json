@@ -17,7 +17,7 @@
     "collab-server": "tsx src/collab/standalone.ts",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "prepare": "husky"
+    "prepare": "node .husky/install.mjs"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
